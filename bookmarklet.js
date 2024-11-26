@@ -16,39 +16,46 @@ var TEXT_SIZE_STYLE = 'm';
 var ADD_BLANK_LINES = false;
 var INSERT_TEXT = '';
 
-function reflow_text(text, max_width, add_blank_lines = false) {
-  // Split the text into paragraphs
+function reflow_text(text, max_width = 60, add_blank_lines = false) {
+  // Split the text into paragraphs at blank lines.
   const paragraphs = text.split(/\n\s*\n/);
 
-  // Process each paragraph
+  // Process each paragraph.
+  // Preserve existing line breaks, such as in verses.
   const processed_paragraphs = paragraphs.map(paragraph => {
-    const words = paragraph.split(/\s+/);
-    const lines = [];
-    let current_line = '';
-    let current_width = 0;
+    const par_lines = paragraph.split(/\n/);
 
-    for (const word of words) {
-      const word_width = word.length;
+    const processed_par_lines = par_lines.map(p_line => {
+      const words = p_line.split(/\s+/);
+      const lines = [];
+      let current_line = '';
+      let current_width = 0;
 
-      if (current_width + word_width + 1 > max_width) {
-        lines.push(current_line.trim());
-        current_line = word;
-        current_width = word_width;
-      } else {
-        if (current_line !== '') {
-          current_line += ' ';
-          current_width++;
+      for (const word of words) {
+        const word_width = word.length;
+
+        if (current_width + word_width + 1 > max_width) {
+          lines.push(current_line.trim());
+          current_line = word;
+          current_width = word_width;
+        } else {
+          if (current_line !== '') {
+            current_line += ' ';
+            current_width++;
+          }
+          current_line += word;
+          current_width += word_width;
         }
-        current_line += word;
-        current_width += word_width;
       }
-    }
 
-    if (current_line !== '') {
-      lines.push(current_line.trim());
-    }
+      if (current_line !== '') {
+        lines.push(current_line.trim());
+      }
 
-    return lines.join('\n');
+      return lines.join('\n');
+    });
+
+    return processed_par_lines.join('\n');
   });
 
   let ret_text = "";
